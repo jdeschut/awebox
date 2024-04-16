@@ -241,6 +241,8 @@ def set_default_options(default_user_options, help_options):
 
         #### ground_station
         ('params', 'ground_station', None, 'r_gen',         0.25,   ('winch generator drum radius [m]',None),'x'),
+        ('params', 'ground_station', None, 'eta_DT',        1.0,   ('Drive train efficiency',None),'x'),
+        ('params', 'ground_station', None, 'eta_RT',        1.0,   ('Round-trip storage efficiency',None),'x'),
         ('params', 'ground_station', None, 'm_gen',         50.,    ('effective mass of generator [kg], guessed',None),'x'),
         ('model', 'ground_station', None, 'ddl_t_max',      15.,    ('reel-in/out acceleration limit on the tether [m/s^2]', None),'x'),
         ('model', 'ground_station', None, 'dddl_t_max',     100.,   ('reel-in/out jerk limit on the tether [m/s^2]', None), 'x'),
