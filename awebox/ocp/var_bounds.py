@@ -60,7 +60,7 @@ def get_scaled_variable_bounds(nlp_options, V, model):
 
         if (var_type == 'x'):
 
-            if nlp_options['collocation']['u_param'] == 'poly' and var_is_coll_var:
+            if nlp_options['collocation']['u_param'] == 'zoh' and var_is_coll_var:
                 vars_lb['coll_var', kdx, ddx, var_type, name] = model.variable_bounds[var_type][name]['lb']
                 vars_ub['coll_var', kdx, ddx, var_type, name] = model.variable_bounds[var_type][name]['ub']
             
@@ -77,7 +77,7 @@ def get_scaled_variable_bounds(nlp_options, V, model):
                 vars_lb[var_type, kdx, name] = model.variable_bounds[var_type][name]['lb']
                 vars_ub[var_type, kdx, name] = model.variable_bounds[var_type][name]['ub']
 
-            elif nlp_options['collocation']['u_param'] == 'poly' and var_is_coll_var:
+            elif nlp_options['collocation']['u_param'] == 'zoh' and var_is_coll_var and var_type == 'z':
                 vars_lb['coll_var', kdx, ddx, var_type, name] = model.variable_bounds[var_type][name]['lb']
                 vars_ub['coll_var', kdx, ddx, var_type, name] = model.variable_bounds[var_type][name]['ub']
 

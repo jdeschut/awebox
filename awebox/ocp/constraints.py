@@ -223,8 +223,8 @@ def expand_with_collocation(nlp_options, P, V, Xdot, model, Collocation):
     if nlp_options['collocation']['u_param'] == 'poly':
         mdl_ineq_map = mdl_ineq_fun.map('mdl_ineq_map', parallellization, coll_nodes, [], [])
     elif nlp_options['collocation']['u_param'] == 'zoh':
-        mdl_ineq_map = mdl_ineq_fun.map('mdl_ineq_map', parallellization, shooting_nodes, [], [])
-
+        # mdl_ineq_map = mdl_ineq_fun.map('mdl_ineq_map', parallellization, shooting_nodes, [], [])
+        mdl_ineq_map = mdl_ineq_fun.map('mdl_ineq_map', parallellization, coll_nodes, [], [])
     mdl_eq_fun = model_constraints_list.get_function(nlp_options, model_variables, model_parameters, 'eq')
     mdl_eq_map = mdl_eq_fun.map('mdl_eq_map', parallellization, coll_nodes, [], [])
 
@@ -235,7 +235,8 @@ def expand_with_collocation(nlp_options, P, V, Xdot, model, Collocation):
     if nlp_options['collocation']['u_param'] == 'poly':
         ocp_ineqs_expr = mdl_ineq_map(coll_vars, coll_params)
     elif nlp_options['collocation']['u_param'] == 'zoh':
-        ocp_ineqs_expr = mdl_ineq_map(shooting_vars, shooting_params)
+        # ocp_ineqs_expr = mdl_ineq_map(shooting_vars, shooting_params)
+        ocp_ineqs_expr = mdl_ineq_map(coll_vars, coll_params)
     ocp_eqs_expr = mdl_eq_map(coll_vars, coll_params)
     ocp_eqs_shooting_expr = mdl_shooting_eq_map(shooting_vars, shooting_params)
 
@@ -262,27 +263,27 @@ def expand_with_collocation(nlp_options, P, V, Xdot, model, Collocation):
                 )
 
             # path constraints on shooting nodes
-            if (ocp_ineqs_expr.shape != (0, 0)):
-                if nlp_options['collocation']['name_constraints']:
-                    for cdx in range(ocp_ineqs_expr[:,kdx].shape[0]):
-                        cstr_list.append(cstr_op.Constraint(
-                            expr = ocp_ineqs_expr[cdx,kdx],
-                            name = 'path_' + str(kdx) + '_' + model_constraints_list.get_name_list('ineq')[cdx] + '_' + str(cdx),
-                            cstr_type = 'ineq'
-                            )
-                        )
-                else:
-                    cstr_list.append(cstr_op.Constraint(
-                        expr=ocp_ineqs_expr[:, kdx],
-                        name='path_{}'.format(kdx),
-                        cstr_type='ineq'
-                        )
-                )
+            # if (ocp_ineqs_expr.shape != (0, 0)):
+            #     if nlp_options['collocation']['name_constraints']:
+            #         for cdx in range(ocp_ineqs_expr[:,kdx].shape[0]):
+            #             cstr_list.append(cstr_op.Constraint(
+            #                 expr = ocp_ineqs_expr[cdx,kdx],
+            #                 name = 'path_' + str(kdx) + '_' + model_constraints_list.get_name_list('ineq')[cdx] + '_' + str(cdx),
+            #                 cstr_type = 'ineq'
+            #                 )
+            #             )
+            #     else:
+            #         cstr_list.append(cstr_op.Constraint(
+            #             expr=ocp_ineqs_expr[:, kdx],
+            #             name='path_{}'.format(kdx),
+            #             cstr_type='ineq'
+            #             )
+            #     )
 
         # collocation constraints
         for jdx in range(d):
             ldx = kdx * d + jdx
-            if nlp_options['collocation']['u_param'] == 'poly':
+            if nlp_options['collocation']['u_param'] == 'zoh':
 
                 cstr_list.append(cstr_op.Constraint(
                     expr = ocp_ineqs_expr[:,ldx],
@@ -316,7 +317,7 @@ def expand_with_collocation(nlp_options, P, V, Xdot, model, Collocation):
     if nlp_options['collocation']['u_param'] == 'zoh':
         entry_tuple += (
             cas.entry('shooting',       repeat = [n_k],     shape = mdl_shooting_cstr_sublist.get_expression_list('eq').shape),
-            cas.entry('path',           repeat = [n_k],     struct = mdl_path_constraints),
+            cas.entry('path',           repeat = [n_k, d],     struct = mdl_path_constraints),
         )
     
     elif nlp_options['collocation']['u_param'] == 'poly':
