@@ -622,10 +622,10 @@ def collect_var_constraints(health_solver_options, nlp, arg, solution):
 
     for idx in range(var.shape[0]):
 
-        lam_idx = np.float(lam[idx])
-        lbx_idx = np.float(lbx.cat[idx])
-        ubx_idx = np.float(ubx.cat[idx])
-        var_idx = np.float(var[idx])
+        lam_idx = np.float64(lam[idx])
+        lbx_idx = np.float64(lbx.cat[idx])
+        ubx_idx = np.float64(ubx.cat[idx])
+        var_idx = np.float64(var[idx])
 
         name_list_strings = list(map(str, nlp.V.getCanonicalIndex(idx)))
         name_underscore = [name + '_' for name in name_list_strings[:-1]] + [name_list_strings[-1]]

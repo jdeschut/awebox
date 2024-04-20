@@ -1280,7 +1280,7 @@ def __get_Omega(layer_siblings, node, parent):
         Omega = 0.
     else:
         idx = layer_siblings[parent].index(node)
-        Omega = np.float(idx) / np.float(number_of_siblings) * 2. * np.pi
+        Omega = np.float64(idx) / np.float64(number_of_siblings) * 2. * np.pi
 
     return Omega
 
