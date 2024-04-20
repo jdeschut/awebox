@@ -126,6 +126,21 @@ def get_coll_params(nlp_options, V, P, model):
                 loc_params = get_parameters_at_time(nlp_options, P, V, Xdot, model.variables, model.parameters, kdx, ddx)
                 coll_params = cas.horzcat(coll_params, loc_params)
 
+    elif nlp_options['phase_fix'] == 'single_reelout':
+        eta_DT = P['theta0', 'ground_station', 'eta_DT']
+        k_reelout = round(n_k * nlp_options['phase_fix_reelout'])
+
+        theta0_reelin = []
+        for j in range(P['theta0'].shape[0]):
+            Index = model.parameters.getCanonicalIndex(j)
+            if Index[2] == 'eta_DT':
+                theta0_reelin.append(1/P['theta0'][j])
+            else:
+                theta0_reelin.append(P['theta0'][j])
+        coll_params_reelout = cas.repmat(parameters(cas.vertcat(P['theta0'], V['phi'])), 1, k_reelout*d)
+        coll_params_reelin  = cas.repmat(parameters(cas.vertcat(cas.vertcat(*theta0_reelin), V['phi'])), 1, (n_k - k_reelout)*d)
+        coll_params = cas.horzcat(coll_params_reelout, coll_params_reelin)
+
     else:
         coll_params = cas.repmat(parameters(cas.vertcat(P['theta0'], V['phi'])), 1, N_coll)
 
