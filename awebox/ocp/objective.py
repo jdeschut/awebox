@@ -170,7 +170,7 @@ def get_regularization_weights(variables, P, nlp_options):
     return weights
 
 
-def get_coll_parallel_info(nlp_options, V, P, Xdot, model):
+def get_coll_parallel_info(nlp_options, V, V_ref, P, Xdot, model):
 
     n_k = nlp_options['n_k']
     d = nlp_options['collocation']['d']
@@ -184,7 +184,7 @@ def get_coll_parallel_info(nlp_options, V, P, Xdot, model):
             coll_weights = cas.horzcat(coll_weights, int_weights[ddx] * p_weights)
 
     coll_vars = struct_op.get_coll_vars(nlp_options, V, P, Xdot, model)
-    coll_refs = struct_op.get_coll_vars(nlp_options, V(P['p', 'ref']), P, Xdot(0.0), model)
+    coll_refs = struct_op.get_coll_vars(nlp_options, V_ref, P, Xdot(0.0), model)
 
     return coll_vars, coll_refs, coll_weights, N_coll
 
@@ -206,11 +206,14 @@ def get_ms_parallel_info(nlp_options, V, P, Xdot, model):
 
 def find_general_regularisation(nlp_options, V, P, Xdot, model):
 
+    # find V_ref
+    V_ref = nlp_options['V_ref']
     variables = model.variables
 
     direct_collocation, multiple_shooting, _, _, _ = extract_discretization_info(nlp_options)
     if direct_collocation:
-        vars, refs, weights, N_steps = get_coll_parallel_info(nlp_options, V, P, Xdot, model)
+        # V_ref = V(P['p', 'ref'])
+        vars, refs, weights, N_steps = get_coll_parallel_info(nlp_options, V, V_ref, P, Xdot, model)
     elif multiple_shooting:
         vars, refs, weights, N_steps = get_ms_parallel_info(nlp_options, V, P, Xdot, model)
     parallellization = nlp_options['parallelization']['type']
@@ -261,7 +264,8 @@ def find_homotopy_parameter_costs(component_costs, V, P):
 def find_time_cost(nlp_options, V, P):
 
     time_period = ocp_outputs.find_time_period(nlp_options, V)
-    tf_init = ocp_outputs.find_time_period(nlp_options, P.prefix['p', 'ref'])
+    V_ref = nlp_options['V_ref']
+    tf_init = ocp_outputs.find_time_period(nlp_options, V_ref)
 
     time_cost = P['cost', 't_f'] * (time_period - tf_init) * (time_period - tf_init)
 
@@ -413,7 +417,7 @@ def find_beta_cost(nlp_options, model, Outputs, P):
 
 ###### assemble the objective!
 
-def find_objective(component_costs, V, V_ref, nlp_options):
+def find_objective(component_costs, V, nlp_options):
 
     # tracking disappears slowly in the cost function and energy maximising appears. at the final step, cost function
     # contains maximising energy, lift, sosc, and regularisation.
@@ -465,7 +469,7 @@ def get_component_cost_dictionary(nlp_options, V, P, variables, parameters, xdot
     component_costs['general_problem_cost'] = find_general_problem_cost(component_costs)
     component_costs['homotopy_cost'] = find_homotopy_cost(component_costs)
 
-    component_costs['objective'] = find_objective(component_costs, V, V(P['p', 'ref']), nlp_options)
+    component_costs['objective'] = find_objective(component_costs, V, nlp_options)
 
     return component_costs
 

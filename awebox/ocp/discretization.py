@@ -158,7 +158,6 @@ def setup_nlp_p_fix(V, model):
 
     # fixed system parameters
     p_fix = cas.struct_symMX([(
-        cas.entry('ref', struct=V),     # tracking reference for cost function
         cas.entry('weights', struct=model.variables)  # weights for cost function
     )])
 

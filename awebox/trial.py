@@ -127,6 +127,7 @@ class Trial(object):
         self.__options.build(architecture)
         self.__model.build(self.__options['model'], architecture)
         self.__formulation.build(self.__options['formulation'], self.__model)
+        self.__options['nlp']['solver'] = self.__options['solver']
         self.__nlp.build(self.__options['nlp'], self.__model, self.__formulation)
         self.__optimization.build(self.__options['solver'], self.__nlp, self.__model, self.__formulation, self.__name)
         self.__visualization.build(self.__model, self.__nlp, self.__name, self.__options)

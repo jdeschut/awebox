@@ -129,21 +129,21 @@ def add_weights_and_refs_to_opti_parameters(p_fix_num, V_ref, nlp, model, V_init
             else:
                 p_fix_num['p', 'weights', variable_type, name] = 1.0
 
-            # set references
-            if variable_type == 'u':
-                if 'u' in V_ref.keys():
-                    p_fix_num['p', 'ref', variable_type, :, name] = V_ref[variable_type, :, name]
-                else:
-                    p_fix_num['p', 'ref', 'coll_var', :, :, variable_type, name] = V_ref['coll_var', :, :, variable_type, name]
+            # # set references
+            # if variable_type == 'u':
+            #     if 'u' in V_ref.keys():
+            #         p_fix_num['p', 'ref', variable_type, :, name] = V_ref[variable_type, :, name]
+            #     else:
+            #         p_fix_num['p', 'ref', 'coll_var', :, :, variable_type, name] = V_ref['coll_var', :, :, variable_type, name]
 
-            elif variable_type == 'theta':
-                p_fix_num['p', 'ref', variable_type, name] = V_ref[variable_type, name]
+            # elif variable_type == 'theta':
+            #     p_fix_num['p', 'ref', variable_type, name] = V_ref[variable_type, name]
 
-            elif variable_type in {'x', 'z'}:
-                if variable_type in list(V_ref.keys()):
-                    p_fix_num['p', 'ref', variable_type, :, name] = V_ref[variable_type, :, name]
-                if 'coll_var' in list(V_ref.keys()):
-                    p_fix_num['p', 'ref', 'coll_var', :, :, variable_type, name] = V_ref['coll_var', :, :, variable_type, name]
+            # elif variable_type in {'x', 'z'}:
+            #     if variable_type in list(V_ref.keys()):
+            #         p_fix_num['p', 'ref', variable_type, :, name] = V_ref[variable_type, :, name]
+            #     if 'coll_var' in list(V_ref.keys()):
+            #         p_fix_num['p', 'ref', 'coll_var', :, :, variable_type, name] = V_ref['coll_var', :, :, variable_type, name]
 
     return p_fix_num
 

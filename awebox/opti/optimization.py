@@ -435,7 +435,7 @@ class Optimization(object):
 
         self.__p_fix_num = nlp.P(self.__arg['p'])
 
-        self.__V_ref = nlp.V(self.__p_fix_num['p', 'ref'])
+        self.__V_ref = nlp.V_ref #nlp.V(self.__p_fix_num['p', 'ref'])
 
         if 'initial_guess' in self.__debug_locations or self.__debug_locations == 'all':
             self.__make_debug_plot(self.__V_init, nlp, visualization, 'initial_guess')

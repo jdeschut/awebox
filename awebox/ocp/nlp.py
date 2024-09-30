@@ -62,6 +62,16 @@ class NLP(object):
             self.print_nlp_options()
             self.__generate_discretization(nlp_options, model, formulation)
             self.generate_variable_bounds(nlp_options, model)
+
+            # make reference
+            from awebox.opti.initialization_dir import initialization
+            from awebox.opti import reference
+            from awebox.opti.preparation import initialize_opti_parameters_with_model_parameters
+            p_fix_num = initialize_opti_parameters_with_model_parameters(self, nlp_options['solver'])
+            V_init = initialization.get_initial_guess(self, model, formulation, nlp_options['solver']['initialization'], p_fix_num)
+            V_ref = reference.get_reference(self, model, V_init, nlp_options['solver'])
+            self.V_ref = V_ref
+            nlp_options['V_ref'] = V_ref
             self.__generate_objective(nlp_options, model)
 
             self.__status = 'I am an NLP.'

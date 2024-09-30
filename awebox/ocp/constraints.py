@@ -58,11 +58,11 @@ def get_constraints(nlp_options, V, P, Xdot, model, dae, formulation, Integral_c
 
         # add initial constraints
         var_initial = struct_op.get_variables_at_time(nlp_options, V, Xdot, model.variables, 0)
-        var_ref_initial = struct_op.get_var_ref_at_time(nlp_options, P, V, Xdot, model, 0)
-        init_cstr = operation.get_initial_constraints(nlp_options, var_initial, var_ref_initial, model, formulation.xi_dict)
-        ocp_cstr_list.append(init_cstr)
-        if len(init_cstr.eq_list) != 0:
-            ocp_cstr_entry_list.append(cas.entry('initial', shape=init_cstr.get_expression_list('all').shape))
+        # var_ref_initial = struct_op.get_var_ref_at_time(nlp_options, P, V, Xdot, model, 0)
+        # init_cstr = operation.get_initial_constraints(nlp_options, var_initial, var_ref_initial, model, formulation.xi_dict)
+        # ocp_cstr_list.append(init_cstr)
+        # if len(init_cstr.eq_list) != 0:
+        #     ocp_cstr_entry_list.append(cas.entry('initial', shape=init_cstr.get_expression_list('all').shape))
 
         # add the path constraints.
         if multiple_shooting:
@@ -82,11 +82,11 @@ def get_constraints(nlp_options, V, P, Xdot, model, dae, formulation, Integral_c
 
         # add terminal constraints
         var_terminal = struct_op.get_variables_at_final_time(nlp_options, V, Xdot, model)
-        var_ref_terminal = struct_op.get_var_ref_at_final_time(nlp_options, P, V, Xdot, model)
-        terminal_cstr = operation.get_terminal_constraints(nlp_options, var_terminal, var_ref_terminal, model, formulation.xi_dict)
-        ocp_cstr_list.append(terminal_cstr)
-        if len(terminal_cstr.eq_list) != 0:
-            ocp_cstr_entry_list.append(cas.entry('terminal', shape=terminal_cstr.get_expression_list('all').shape))
+        # var_ref_terminal = struct_op.get_var_ref_at_final_time(nlp_options, P, V, Xdot, model)
+        # terminal_cstr = operation.get_terminal_constraints(nlp_options, var_terminal, var_ref_terminal, model, formulation.xi_dict)
+        # ocp_cstr_list.append(terminal_cstr)
+        # if len(terminal_cstr.eq_list) != 0:
+        #     ocp_cstr_entry_list.append(cas.entry('terminal', shape=terminal_cstr.get_expression_list('all').shape))
 
         # add periodic constraints
         periodic_cstr = operation.get_periodic_constraints(nlp_options, model, var_initial, var_terminal)
