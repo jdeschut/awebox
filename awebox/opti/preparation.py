@@ -92,42 +92,42 @@ def initialize_opti_parameters_with_model_parameters(nlp, options):
     p_fix_num = P(0.)
 
     # system parameters
-    param_options = options['initialization']['sys_params_num']
-    for param_type in list(param_options.keys()):
-        if isinstance(param_options[param_type],dict):
-            for param in list(param_options[param_type].keys()):
-                if isinstance(param_options[param_type][param],dict):
-                    for subparam in list(param_options[param_type][param].keys()):
-                        p_fix_num['theta0',param_type,param,subparam] = param_options[param_type][param][subparam]
+    # param_options = options['initialization']['sys_params_num']
+    # for param_type in list(param_options.keys()):
+    #     if isinstance(param_options[param_type],dict):
+    #         for param in list(param_options[param_type].keys()):
+    #             if isinstance(param_options[param_type][param],dict):
+    #                 for subparam in list(param_options[param_type][param].keys()):
+    #                     p_fix_num['theta0',param_type,param,subparam] = param_options[param_type][param][subparam]
 
-                else:
-                    p_fix_num['theta0',param_type,param] = options['initialization']['sys_params_num'][param_type][param]
+    #             else:
+    #                 p_fix_num['theta0',param_type,param] = options['initialization']['sys_params_num'][param_type][param]
 
-        else:
-            p_fix_num['theta0',param_type] = param_options[param_type]
+    #     else:
+    #         p_fix_num['theta0',param_type] = param_options[param_type]
 
     return p_fix_num
 
 
 def add_weights_and_refs_to_opti_parameters(p_fix_num, V_ref, nlp, model, V_init, options):
 
-    p_fix_num['p', 'weights'] = 1.0e-8
+    # p_fix_num['p', 'weights'] = 1.0e-8
 
-    # weights and references
-    for variable_type in set(model.variables.keys()):
-        for name in struct_op.subkeys(model.variables, variable_type):
-            # set weights
-            var_name, _ = struct_op.split_name_and_node_identifier(name)
+    # # weights and references
+    # for variable_type in set(model.variables.keys()):
+    #     for name in struct_op.subkeys(model.variables, variable_type):
+    #         # set weights
+    #         var_name, _ = struct_op.split_name_and_node_identifier(name)
 
-            if var_name[0] == 'w':
-                # then, this is a vortex wake variable
-                var_name = 'vortex'
+    #         if var_name[0] == 'w':
+    #             # then, this is a vortex wake variable
+    #             var_name = 'vortex'
 
 
-            if var_name in list(options['weights'].keys()):  # global variable
-                p_fix_num['p', 'weights', variable_type, name] = options['weights'][var_name]
-            else:
-                p_fix_num['p', 'weights', variable_type, name] = 1.0
+    #         if var_name in list(options['solver']['weights'].keys()):  # global variable
+    #             p_fix_num['p', 'weights', variable_type, name] = options['solver']['weights'][var_name]
+    #         else:
+    #             p_fix_num['p', 'weights', variable_type, name] = 1.0
 
             # # set references
             # if variable_type == 'u':

@@ -78,7 +78,8 @@ def get_shooting_params(nlp_options, V, P, model):
     shooting_nodes = count_shooting_nodes(nlp_options)
 
     parameters = model.parameters
-    coll_params = cas.repmat(parameters(cas.vertcat(P['theta0'], V['phi'])), 1, (shooting_nodes))
+    theta0 = model.theta0
+    coll_params = cas.repmat(parameters(cas.vertcat(theta0, V['phi'])), 1, (shooting_nodes))
     return coll_params
 
 
@@ -105,7 +106,8 @@ def get_coll_params(nlp_options, V, P, model):
     N_coll = n_k * d # collocation points
 
     parameters = model.parameters
-    coll_params = cas.repmat(parameters(cas.vertcat(P['theta0'], V['phi'])), 1, N_coll)
+    theta0 = model.theta0
+    coll_params = cas.repmat(parameters(cas.vertcat(theta0, V['phi'])), 1, N_coll)
     return coll_params
 
 

@@ -428,7 +428,21 @@ def generate_system_parameters(options, architecture):
         cas.entry('phi', struct=parameters_dict['phi'])
     ])
 
-    return parameters, parameters_dict
+    # generate numeric version
+    theta0 = parameters_dict['theta0'](0.0)
+    for param_type in list(parametric_options.keys()):
+        if isinstance(parametric_options[param_type],dict):
+            for param in list(parametric_options[param_type].keys()):
+                if isinstance(parametric_options[param_type][param],dict):
+                    for subparam in list(parametric_options[param_type][param].keys()):
+                        theta0[param_type,param,subparam] = parametric_options[param_type][param][subparam]
+
+                else:
+                    theta0[param_type,param] = parametric_options[param_type][param]
+
+        else:
+            theta0[param_type] = parametric_options[param_type]
+    return parameters, parameters_dict, theta0
 
 
 def generate_optimization_parameters():

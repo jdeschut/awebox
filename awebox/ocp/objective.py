@@ -146,7 +146,25 @@ def get_regularization_weights(variables, P, nlp_options):
 
     sorting_dict, _ = get_regularization_sorting_dict(nlp_options)
 
-    weights = variables(P['p', 'weights'])
+    weights = variables(1.0e-8)
+
+    # weights and references
+    for variable_type in set(variables.keys()):
+        for name in struct_op.subkeys(variables, variable_type):
+            # set weights
+            var_name, _ = struct_op.split_name_and_node_identifier(name)
+
+            if var_name[0] == 'w':
+                # then, this is a vortex wake variable
+                var_name = 'vortex'
+
+
+            if var_name in list(nlp_options['solver']['weights'].keys()):  # global variable
+                weights[variable_type, name] = nlp_options['solver']['weights'][var_name]
+            else:
+                weights[variable_type, name] = 1.0
+
+    weights_MX = []
 
     for var_type in set(variables.keys()):
         category = sorting_dict[var_type]['category']
@@ -159,14 +177,18 @@ def get_regularization_weights(variables, P, nlp_options):
                 shortened_cat_name = category[:-5]
                 normalization = nlp_options['cost']['normalization'][shortened_cat_name]
                 factor = P['cost', shortened_cat_name]
-                weights[var_type, var_name] = weights[var_type, var_name] * factor / normalization
+                weights_MX.append(weights[var_type, var_name] * factor / normalization)
 
             elif (name in exceptions.keys()) and (exceptions[name] is not None):
                 shortened_cat_name = exceptions[name][:-5]
                 normalization = nlp_options['cost']['normalization'][shortened_cat_name]
                 factor = P['cost', shortened_cat_name]
-                weights[var_type, var_name] = weights[var_type, var_name] * factor / normalization
+                weights_MX.append(weights[var_type, var_name] * factor / normalization)
 
+            else:
+                weights_MX.append(weights[var_type, var_name])
+
+    weights = weights(cas.vertcat(*weights_MX))
     return weights
 
 

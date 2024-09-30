@@ -170,9 +170,9 @@ def setup_nlp_p(V, model):
     p_fix = setup_nlp_p_fix(V, model)
 
     P = cas.struct_symMX([
-        cas.entry('p', struct=p_fix),
-        cas.entry('cost', struct=cost),
-        cas.entry('theta0', struct=model.parameters_dict['theta0'])
+        # cas.entry('p', struct=p_fix),
+        cas.entry('cost', struct=cost)
+        # cas.entry('theta0', struct=model.parameters_dict['theta0'])
     ])
 
     return P
