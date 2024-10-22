@@ -204,10 +204,6 @@ def set_initial_bounds(nlp, model, formulation, options, V_init_si, schedule):
         V_bounds['lb']['x', :, 'dl_t'] = -1. * cas.inf
         V_bounds['ub']['x', :, 'dl_t'] = 1. * cas.inf
 
-        # make sure that pumping range fixing bounds are not imposed initially
-        V_bounds['lb']['x', :, 'l_t'] = -1. * cas.inf
-        V_bounds['ub']['x', :, 'l_t'] = 1. * cas.inf
-
         if 'coll_var' in list(nlp.V.keys()):
             V_bounds['lb']['coll_var', :, :, 'x', 'dl_t'] = -1. * cas.inf
             V_bounds['ub']['coll_var', :, :, 'x', 'dl_t'] = 1. * cas.inf
@@ -312,7 +308,9 @@ def generate_hippo_strategy_solvers(awebox_callback, nlp, options):
     dict_of_bundled_nlp_and_options = {}
     ordered_names = ['initial', 'middle', 'final']
     for name in ordered_names:
-        dict_of_bundled_nlp_and_options[name] = copy.deepcopy(bundled_nlp)
+        dict_of_bundled_nlp_and_options[name] = {}
+        for nlp_key in bundled_nlp.keys():
+            dict_of_bundled_nlp_and_options[name][nlp_key] = bundled_nlp[nlp_key]
 
     dict_of_bundled_nlp_and_options['initial']['opts'] = initial_opts
     dict_of_bundled_nlp_and_options['middle']['opts'] = middle_opts
