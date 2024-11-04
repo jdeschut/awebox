@@ -166,6 +166,8 @@ def set_default_options(default_user_options, help_options):
         ('model',  'aero', 'overwrite', 'beta_max_deg', None,     ('aerodynamic parameter', None),'t'),
         ('model',  'aero', 'overwrite', 'beta_min_deg', None,     ('aerodynamic parameter', None),'t'),
 
+        ('model',  'mass', None, 'mass_scaling_law', False,     ('Scale mass depending on wing loading, size and geometry', None),'t'),
+
         ## kite model
         #### tether properties
         ('params',  'tether', None,         'kappa',                10.,        ('Baumgarte stabilization constant for constraint formulation[-]', None),'s'),

@@ -36,6 +36,7 @@ import awebox.tools.vector_operations as vect_op
 import awebox.tools.struct_operations as struct_op
 import awebox.tools.print_operations as print_op
 import awebox.mdl.aero.tether_dir.tether_aero as tether_aero
+import awebox.mdl.lagr_dyn_dir.mass as mass
 
 from awebox.logger.logger import Logger as awelogger
 
@@ -98,14 +99,15 @@ def add_node_kinetic(node, options, variables_si, parameters, outputs, architect
 
     e_kin_kite_trans = cas.DM(0.)
     if node_has_a_kite:
-        mass_kite = parameters['theta0', 'geometry', 'm_k']
+        mass_kite = mass.generate_kite_mass(options, variables_si, parameters, architecture)
         e_kin_kite_trans = 0.5 * mass_kite * cas.mtimes(dq_node.T, dq_node)
     outputs['e_kinetic']['kite_trans' + label] = e_kin_kite_trans
+    outputs['masses']['m_k' + label] = mass_kite
 
     e_kinetic_kite_rot = cas.DM(0.)
     if node_has_a_kite and kites_have_6dof:
         omega = variables_si['x']['omega' + label]
-        j_kite = parameters['theta0', 'geometry', 'j']
+        j_kite = mass.generate_kite_inertia_tensor(options, parameters, mass_kite)
         e_kinetic_kite_rot = 0.5 * cas.mtimes(cas.mtimes(omega.T, j_kite), omega)
 
     outputs['e_kinetic']['kite_rot' + label] = e_kinetic_kite_rot
@@ -137,7 +139,7 @@ def add_node_potential(node, options, variables_si, parameters, outputs, archite
 
     e_potential_kite = cas.DM(0.)
     if node_has_a_kite:
-        mass_kite = parameters['theta0', 'geometry', 'm_k']
+        mass_kite = mass.generate_kite_mass(options, variables_si, parameters, architecture)
         e_potential_kite += gravity * mass_kite * q_node[2]
 
     outputs['e_potential']['kite' + label] = e_potential_kite
