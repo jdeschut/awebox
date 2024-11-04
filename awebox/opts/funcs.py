@@ -229,8 +229,10 @@ def build_nlp_options(options, help_options, user_options, options_tree, archite
 
     if options['nlp']['compile_subfunctions']:
 
+        mass_scaling = "with" if options['model']['mass']['mass_scaling_law'] else "no"
+
         # general name for compilation files that takes into account (most) identifying options for model and constraints
-        compilation_file_name = 'awebox_{}_k{}_{}_{}_{}dof_{}_wind_profile_u_ref_{}_{}{}_{}'.format(
+        compilation_file_name = 'awebox_{}_k{}_{}_{}_{}dof_{}_wind_profile_u_ref_{}_{}{}_{}_{}_m_scaling'.format(
             user_options['trajectory']['type'],
             len(architecture.kite_nodes),
             user_options['kite_standard']['name'],
@@ -240,7 +242,8 @@ def build_nlp_options(options, help_options, user_options, options_tree, archite
             user_options['wind']['u_ref'],
             user_options['tether_drag_model'],
             options['model']['tether']['aero_elements'],
-            options['model']['tether']['control_var']
+            options['model']['tether']['control_var'],
+            mass_scaling
         )
 
         if options['nlp']['cost']['P_max']:

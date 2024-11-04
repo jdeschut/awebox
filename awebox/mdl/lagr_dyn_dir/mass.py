@@ -30,6 +30,7 @@ _python-3.5 / casadi-3.4.5
 
 
 import casadi.tools as cas
+import numpy as np
 
 import awebox.tools.vector_operations as vect_op
 import awebox.tools.struct_operations as struct_op
@@ -105,6 +106,47 @@ def generate_kite_to_node_mass_ratio(options, variables_si, parameters, architec
 
     return mass_ratio_stacked
 
+
+def generate_kite_mass(options, variables_si, parameters, architecture):
+
+    if options['mass']['mass_scaling_law']:
+
+        maximum_allowed_stress = parameters['theta0', 'tether', 'max_stress'] / parameters['theta0', 'tether', 'stress_safety_factor']
+        if len(architecture.kite_nodes) == 1:
+            tether_diameter = variables_si['theta']['diam_t']
+        else:
+            tether_diameter = variables_si['theta']['diam_s']
+        maximum_allowed_force_in_kN = 1e-3*maximum_allowed_stress*np.pi*tether_diameter**2/4
+        wing_area = parameters['theta0', 'geometry', 's_ref']
+        AR = parameters['theta0', 'geometry', 'ar']
+        AR_ref = 12
+
+        # formula from https://doi.org/10.5194/wes-2024-86
+        f1 = 0.024*maximum_allowed_force_in_kN*wing_area + 0.1*wing_area**2 + 1.7*maximum_allowed_force_in_kN + 32.5*wing_area - 50
+        f2 = 0.46*(AR/AR_ref)**2 - 0.66*(AR/AR_ref) + 1.2
+
+        kite_mass = f1 * f2
+
+    else:
+
+        kite_mass = parameters['theta0', 'geometry', 'm_k']
+
+    return kite_mass
+
+def generate_kite_inertia_tensor(options, parameters, mass_kite):
+    
+    j_ref = parameters['theta0', 'geometry', 'j']
+
+    if options['mass']['mass_scaling_law']:
+
+        mass_kite_ref = parameters['theta0', 'geometry', 'm_k']
+        j_kite = j_ref * mass_kite / mass_kite_ref
+
+    else:
+
+        j_kite = j_ref
+
+    return j_kite
 
 # def initialize_mass_dictionary(options, architecture):
 #
