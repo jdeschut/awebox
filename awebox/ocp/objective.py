@@ -371,10 +371,11 @@ def find_general_problem_cost(component_costs):
     xdot_regularisation_cost = component_costs['xdot_regularisation_cost']
     theta_regularisation_cost = component_costs['theta_regularisation_cost']
     beta_cost = component_costs['beta_cost']
+    invariants_cost = component_costs['invariants_cost']
     time_cost = component_costs['time_cost']
     fictitious_cost = component_costs['fictitious_cost']
 
-    general_problem_cost = fictitious_cost + u_regularisation_cost + xdot_regularisation_cost + theta_regularisation_cost + beta_cost + time_cost
+    general_problem_cost = fictitious_cost + u_regularisation_cost + xdot_regularisation_cost + theta_regularisation_cost + beta_cost + invariants_cost + time_cost
 
     return general_problem_cost
 
@@ -391,6 +392,17 @@ def find_homotopy_cost(component_costs):
     homotopy_cost = psi_cost + iota_cost + tau_cost + gamma_cost + eta_cost + nu_cost + upsilon_cost 
 
     return homotopy_cost
+
+def find_invariants_cost(nlp_options, model, Integral_outputs, P):
+
+    if nlp_options['cost']['invariants']:
+        invariants_cost = Integral_outputs['int_out', -1, 'invariants_cost']
+        invariants_cost = P['cost', 'invariants'] * invariants_cost / nlp_options['cost']['normalization']['invariants']
+    else:
+        invariants_cost = 0
+
+    return invariants_cost
+
 
 
 def find_beta_cost(nlp_options, model, Integral_outputs, P):
@@ -453,6 +465,7 @@ def get_component_cost_dictionary(nlp_options, V, P, variables, parameters, xdot
     component_costs['nominal_landing_cost'] = find_nominal_landing_problem_cost(nlp_options, V, P, variables)
     component_costs['transition_cost'] = find_transition_problem_cost(component_costs, P)
     component_costs['beta_cost'] = find_beta_cost(nlp_options, model, Integral_outputs, P)
+    component_costs['invariants_cost'] = find_invariants_cost(nlp_options, model, Integral_outputs, P)
     component_costs['tracking_problem_cost'] = find_tracking_problem_cost(component_costs, P)
     component_costs['power_problem_cost'] = find_power_problem_cost(component_costs)
     component_costs['general_problem_cost'] = find_general_problem_cost(component_costs)

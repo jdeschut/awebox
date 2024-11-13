@@ -220,6 +220,22 @@ def get_dictionary_of_derivatives(model_options, system_variables, parameters, a
             beta_si += outputs['aerodynamics']['beta{}'.format(kite)]**2
         beta_si = beta_si / len(architecture.kite_nodes)
         derivative_dict['beta_cost'] =  (beta_si, beta_scaling)
+    if model_options['invariants_cost']:
+        invariant_scaling = 1.
+        invariants_si = 0.
+        for node in range(1, architecture.number_of_nodes):
+
+            parent = architecture.parent_map[node]
+            c = outputs['invariants']['c{}{}'.format(node, parent)]
+            dc = outputs['invariants']['dc{}{}'.format(node, parent)]
+            invariants_si += cas.mtimes(c.T, c)
+            invariants_si += cas.mtimes(dc.T, dc)
+
+            # if node in architecture.kite_nodes and model_options['kite_dof'] == 6:
+            #     ortho =  outputs['invariants']['orthonormality{}{}'.format(node,parent)]
+            #     invariants_si += cas.mtimes(ortho.T, ortho)
+        derivative_dict['invariants_cost'] =  (invariants_si, invariant_scaling)
+
     if model_options['trajectory']['system_type'] == 'drag_mode':
         power_derivative_sq_scaling = 1.
         power_derivative_sq = outputs['performance']['power_derivative']**2
