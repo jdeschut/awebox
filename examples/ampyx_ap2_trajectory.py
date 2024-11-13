@@ -48,7 +48,8 @@ def run(plot_show_block=True, overwrite_options={}):
     options['user_options.trajectory.lift_mode.phase_fix'] = 'simple' # 'single_reelout'
     options['solver.linear_solver'] = 'ma57'  # if HSL is installed, otherwise 'mumps'
     options['nlp.cost.beta'] = False # penalize side-slip (can improve convergence)
-
+    options['nlp.cost.invariants'] = True
+    options['solver.cost.invariants.0'] = 1e1
     # (experimental) set to "True" to significantly (factor 5 to 10) decrease construction time
     # note: this may result in slightly slower solution timings
     options['nlp.compile_subfunctions'] = True
@@ -73,6 +74,12 @@ def run(plot_show_block=True, overwrite_options={}):
     outputs = plot_dict['outputs']
     time = plot_dict['time_grids']['ip']
     avg_power = plot_dict['power_and_performance']['avg_power']/1e3
+
+    plt.figure()
+    plt.semilogy(time, np.abs(outputs['invariants']['c10'][0]), label = 'c10')
+    plt.semilogy(time, np.abs(outputs['invariants']['dc10'][0]), label = 'dc10')
+    plt.legend()
+    plt.grid(True)
 
     print('======================================')
     print('Average power: {} kW'.format(avg_power))
@@ -117,7 +124,7 @@ def run(plot_show_block=True, overwrite_options={}):
     plt.grid(True)
 
     # a block=False argument will automatically close the figures after they've been created
-    # plt.show(block=plot_show_block)
+    plt.show(block=plot_show_block)
 
     return trial
 
