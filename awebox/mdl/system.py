@@ -44,6 +44,7 @@ def generate_structure(options, architecture):
     kite_dof = options['kite_dof']
     surface_control = options['surface_control']
     tether_control_var = options['tether']['control_var']
+    wing_type = options['wing_type']
 
     # _system architecture (see _zanon2013a)
     number_of_nodes = architecture.number_of_nodes
@@ -97,6 +98,9 @@ def generate_structure(options, architecture):
         kite_states += [('kappa', (1, 1))]
         kite_controls += [('dkappa', (1, 1))]
 
+    if options['wing_type'] == 'LEI':
+        kite_states += [('psi', (1,1))] # orientation state for LEI kite
+    import pdb; pdb.set_trace()
     # _list states, generalized coordinates and controls of all the nodes
     # together
     system_states = []
