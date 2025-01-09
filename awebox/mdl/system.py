@@ -100,7 +100,7 @@ def generate_structure(options, architecture):
 
     if options['wing_type'] == 'LEI':
         kite_states += [('psi', (1,1))] # orientation state for LEI kite
-    import pdb; pdb.set_trace()
+
     # _list states, generalized coordinates and controls of all the nodes
     # together
     system_states = []
