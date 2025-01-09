@@ -332,8 +332,12 @@ def build_constraint_applicablity_options(options, options_tree, fixed_params, a
         dcoeff_scaling = dcoeff_max
         options_tree.append(('model', 'scaling', 'u', 'dcoeff', dcoeff_scaling, ('???', None), 'x'))
 
-        options_tree.append(('model', 'model_bounds', 'aero_validity', 'include', False,
-                             ('do not include aero validity for roll control', None), 'x'))
+        if options['user_options']['system_model']['wing_type'] == 'rigid_wing':
+            aero_validity = False
+        elif options['user_options']['system_model']['wing_type'] == 'LEI':
+            aero_validity = True
+        options_tree.append(('model', 'model_bounds', 'aero_validity', 'include', aero_validity,
+                             ('only include aero validity for LEI 3DOF model', None), 'x'))
 
         compromised_factor = options['model']['aero']['three_dof']['dcoeff_compromised_factor']
         dcoeff_compromised_max = np.array([5 * compromised_factor, 5])
