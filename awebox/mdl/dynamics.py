@@ -90,6 +90,13 @@ def make_dynamics(options, atmos, wind, parameters, architecture):
     lagr_dyn_cstr, outputs = lagr_dyn.get_dynamics(options, atmos, wind, architecture, system_variables, system_gc, parameters, outputs, wake, scaling)
     cstr_list.append(lagr_dyn_cstr)
 
+    # add LEI soft-wing dynamic equation for psi
+    if options['wing_type'] == 'LEI':
+        kitepower_lei_psi_dyn_cstr_expr = system_variables['SI']['xdot']['dpsi10'] - 1.0 # dpsi - expr_for_dpsi
+        lei_soft_wing_psi_cstr = cstr_op.Constraint(expr=kitepower_lei_psi_dyn_cstr_expr,
+                                                    cstr_type='eq',
+                                                    name='dynamics_lei_psi')
+        cstr_list.append(lei_soft_wing_psi_cstr)
 
     # enforce lifted aerodynamic force <-- this must happen after lagr_dyn.get_dynamics, which determines the kite indicators
     if options['aero']['lift_aero_force']:
