@@ -93,6 +93,8 @@ def build_geometry_options(options, help_options, options_tree, fixed_params):
             dict_type = 'model'
         options_tree.append((dict_type, 'geometry', None, name,geometry[name], ('???', None),'x'))
 
+    options_tree.append(('model', None, None, 'wing_type', options['user_options']['system_model']['wing_type'], ('???', None),'x'))
+
     return options_tree, fixed_params
 
 def get_geometry(options):
