@@ -353,14 +353,6 @@ def build_formulation_options(options, help_options, user_options, options_tree,
     options_tree.append(('formulation', 'landing', None, 'xi_0_initial', user_options['trajectory']['compromised_landing']['xi_0_initial'], ('starting position on initial trajectory between 0 and 1', None),'x'))
     options_tree.append(('formulation', 'compromised_landing', None, 'emergency_scenario', user_options['trajectory']['compromised_landing']['emergency_scenario'], ('???', None),'x'))
 
-    if int(user_options['system_model']['kite_dof']) == 3:
-        coeff_max = options['model']['system_bounds']['x']['coeff'][1]
-        coeff_min = options['model']['system_bounds']['x']['coeff'][0]
-        battery_model_parameters = load_battery_parameters(options['user_options']['kite_standard'], coeff_max, coeff_min)
-        for name in list(battery_model_parameters.keys()):
-            if options['formulation']['compromised_landing']['battery'][name] is None:
-                options_tree.append(('formulation', 'compromised_landing', 'battery', name, battery_model_parameters[name], ('???', None),'t'))
-
     return options_tree
 
 def build_mpc_options(options, options_tree):
