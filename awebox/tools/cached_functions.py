@@ -23,7 +23,8 @@ elif platform.system() == 'Darwin':
     _COMPILERS = ["clang"]  # OSX
 elif platform.system() == 'Windows':
     _COMPILERS = ["cl.exe"] # Windows
-_COMPILER = None
+_COMPILER = "cl.exe"
+print(_COMPILER)
 
 # Data utils
 def write_json(data, file):

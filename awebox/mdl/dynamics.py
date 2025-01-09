@@ -92,6 +92,7 @@ def make_dynamics(options, atmos, wind, parameters, architecture):
 
     # add LEI soft-wing dynamic equation for psi
     if options['wing_type'] == 'LEI':
+        psi = system_variables['SI']['x']['psi10']
         kitepower_lei_psi_dyn_cstr_expr = system_variables['SI']['xdot']['dpsi10'] - 1.0 # dpsi - expr_for_dpsi
         lei_soft_wing_psi_cstr = cstr_op.Constraint(expr=kitepower_lei_psi_dyn_cstr_expr,
                                                     cstr_type='eq',

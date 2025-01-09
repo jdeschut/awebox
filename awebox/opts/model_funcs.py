@@ -87,10 +87,13 @@ def build_geometry_options(options, help_options, options_tree, fixed_params):
 
     geometry = get_geometry(options)
     for name in list(geometry.keys()):
-        if help_options['model']['geometry']['overwrite'][name][1] == 's':
-            dict_type = 'params'
+        if name in help_options['model']['geometry']['overwrite'].keys():
+            if help_options['model']['geometry']['overwrite'][name][1] == 's':
+                dict_type = 'params'
+            else:
+                dict_type = 'model'
         else:
-            dict_type = 'model'
+            dict_type = 'params'
         options_tree.append((dict_type, 'geometry', None, name,geometry[name], ('???', None),'x'))
 
     options_tree.append(('model', None, None, 'wing_type', options['user_options']['system_model']['wing_type'], ('???', None),'x'))

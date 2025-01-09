@@ -57,6 +57,7 @@ def get_force_vector(options, variables, atmos, wind, architecture, parameters, 
 
     return force_found_vector, force_found_frame, vec_u, kite_dcm
 
+
 def get_force_cstr(options, variables, atmos, wind, architecture, parameters, outputs):
 
     cstr_list = cstr_op.MdlConstraintList()
@@ -95,37 +96,85 @@ def get_force_from_u_sym_in_earth_frame(vec_u, options, variables, kite, atmos, 
     rho_infty = atmos.get_density(q[2])
 
     kite_dcm = get_kite_dcm(options, variables, wind, kite, architecture)
-    Lhat = kite_dcm[:,2]
+    
+    if options['wing_type'] == 'rigid_wing':
+        
+        Lhat = kite_dcm[:,2]
 
-    # lift and drag coefficients
-    CL = coeff[0]
+        # lift and drag coefficients
+        CL = coeff[0]
 
-    CD0 = 0.
-    poss_drag_labels_in_order_of_increasing_preference = ['CX', 'CA', 'CD']
-    for poss_drag_label in poss_drag_labels_in_order_of_increasing_preference:
-        local_parameter_label = '[theta0,aero,' + poss_drag_label + ',0,0]'
-        if local_parameter_label in parameters.labels():
-            CD0 = vect_op.abs(parameters['theta0', 'aero', poss_drag_label, '0'][0])
+        CD0 = 0.
+        poss_drag_labels_in_order_of_increasing_preference = ['CX', 'CA', 'CD']
+        for poss_drag_label in poss_drag_labels_in_order_of_increasing_preference:
+            local_parameter_label = '[theta0,aero,' + poss_drag_label + ',0,0]'
+            if local_parameter_label in parameters.labels():
+                CD0 = vect_op.abs(parameters['theta0', 'aero', poss_drag_label, '0'][0])
 
-    CD = CD0 + CL ** 2 / (np.pi * parameters['theta0', 'geometry', 'ar'])
+        CD = CD0 + CL ** 2 / (np.pi * parameters['theta0', 'geometry', 'ar'])
 
-    s_ref = parameters['theta0', 'geometry', 's_ref']
+        s_ref = parameters['theta0', 'geometry', 's_ref']
 
-    # lift and drag force
-    f_lift = CL * 1. / 2. * rho_infty * cas.mtimes(vec_u.T, vec_u) * s_ref * Lhat
-    f_drag = CD * 1. / 2. * rho_infty * vect_op.norm(vec_u) * s_ref * vec_u
+        # lift and drag force
+        f_lift = CL * 1. / 2. * rho_infty * cas.mtimes(vec_u.T, vec_u) * s_ref * Lhat
+        f_drag = CD * 1. / 2. * rho_infty * vect_op.norm(vec_u) * s_ref * vec_u
 
-    f_aero = f_lift + f_drag
+        f_aero = f_lift + f_drag
+
+    if options['wing_type'] == 'LEI':
+        psi = variables['x']['psi' + str(kite) + str(parent)]
+
+        CL, CD = get_aerodynamic_coefficient(alpha)
+
+        q = variables['x']['q' + str(kite) + str(parent)]
+
+
+        f_lift_unit_vec = cas.cross(vec_u, kite_dcm[:, 1]) / cas.norm_2(cas.cross(vec_u, kite_dcm[:, 1]))
+        f_drag_unit_vec = vec_u / cas.norm_2(vec_u)
+        f_lift = 1. / 2. * rho_infty * cas.norm_2(vec_u)**2 * parameters['theta0', 'geometry', 's_ref'] * CL * f_lift_unit_vec
+        f_drag = 1. / 2. * rho_infty * cas.norm_2(vec_u)**2 * parameters['theta0', 'geometry', 's_ref'] * CD * (1 + parameters['theta0', 'geometry', 'K_s_D'] * cas.norm_1(coeff[0])) * f_drag_unit_vec
+
+        correction_term = (parameters['theta0', 'geometry', 'c2_s'] / cas.norm_2(vec_u)) * cas.sin(psi) * cas.cos(deg2rad(parameters['theta0', 'geometry', 'beta']))
+        f_side = 1. / 2. * rho_infty * cas.norm_2(vec_u)**2 *  parameters['theta0', 'geometry', 'A_side/A'] * parameters['theta0', 'geometry', 'c_s'] * (coeff[0]+ correction_term) * kite_dcm[:, 1]
+
+        f_aero =  f_lift + f_drag + f_side
 
     return f_aero
 
+def deg2rad(angle_in_deg):
+    return angle_in_deg * (cas.pi / 180)
 
+def rad2deg(angle_in_rad):
+    return angle_in_rad * (180 / cas.pi)
 
+def get_aerodynamic_coefficient(alpha):
+    """
+    Calculates the aerodynamic coefficient for a given angle of attack alpha.
 
+    :param alpha: angle of attack (AOA) alpha in grad
+    :return: C_l, C_D: the aerodynamic coefficient for the given AOA
 
+    """
+    degrees = [-20, -15, -10, -5, 0, 5, 10, 15, 20]
+    CL_values = [0.1, 0.125, 0.15, 0.175, 0.2, 0.4, 0.6, 0.8, 1.0]
+    CD_values = [0.2, 0.175, 0.15, 0.125, 0.1, 0.125,0.15, 0.175, 0.2]
 
+    cl_f = cas.interpolant('Cl_F','bspline', [degrees], CL_values)
+    cd_f = cas.interpolant('Cd_F','bspline', [degrees], CD_values)
 
+    cl = cl_f(alpha)
+    cd = cd_f(alpha)
+    return cl, cd
 
+def get_kite_reference_frame_1p_model(tether_direction, apparent_wind_vector):
+    """
+    Calculates the reference frame (ex, ey, ez) for the kite.
+    """
+    ez = -tether_direction / cas.norm_2(tether_direction)
+    ey = cas.cross(apparent_wind_vector, ez)
+    ey = ey / cas.norm_2(ey)
+    ex = cas.cross(ey, ez)
+    return ex, ey, ez
 
 def tether_vector(variables, architecture, node):
 
@@ -168,20 +217,29 @@ def get_kite_dcm(options, variables, wind, kite, architecture):
 
     vec_u_eff = tools.get_u_eff_in_earth_frame(options, variables, wind, kite, architecture)
 
-    # roll angle
-    coeff = variables['x']['coeff' + str(kite) + str(parent)]
-    psi = coeff[1]
+    if options['wing_type'] == 'rigid_wing':
 
-    planar_dcm = get_planar_dcm(vec_u_eff, variables, kite, architecture)
-    uhat = planar_dcm[:, 0]
-    vhat = planar_dcm[:, 1]
-    what = planar_dcm[:, 2]
+        # roll angle
+        coeff = variables['x']['coeff' + str(kite) + str(parent)]
+        psi = coeff[1]
 
-    ehat1 = uhat
-    ehat2 = cas.cos(psi) * vhat + cas.sin(psi) * what
-    ehat3 = cas.cos(psi) * what - cas.sin(psi) * vhat
+        planar_dcm = get_planar_dcm(vec_u_eff, variables, kite, architecture)
+        uhat = planar_dcm[:, 0]
+        vhat = planar_dcm[:, 1]
+        what = planar_dcm[:, 2]
 
-    kite_dcm = cas.horzcat(ehat1, ehat2, ehat3)
+        ehat1 = uhat
+        ehat2 = cas.cos(psi) * vhat + cas.sin(psi) * what
+        ehat3 = cas.cos(psi) * what - cas.sin(psi) * vhat
+
+        kite_dcm = cas.horzcat(ehat1, ehat2, ehat3)
+
+    elif options['wing_type'] == 'LEI':
+
+        q = variables['x']['q' + str(kite) + str(parent)]
+        kite_dcm = get_kite_dcm(options, variables, wind, kite, architecture)
+        ehat1, ehat2, ehat3 =  get_kite_reference_frame_1p_model(q[1], vec_u_eff)
+        kite_dcm = cas.horzcat(ehat1, ehat2, ehat3)
 
     return kite_dcm
 

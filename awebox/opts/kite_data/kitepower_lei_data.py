@@ -41,18 +41,45 @@ def data_dict():
 def geometry():
 
     geometry = {}
-    geometry['b_ref'] = 10. # fill in some meaningful value
-    geometry['s_ref'] = 3.  # [m^2]
+    geometry['b_ref'] = 5 # fill in some meaningful value
+    geometry['s_ref'] = 10.18  # [m^2]
     geometry['c_ref'] = geometry['s_ref'] / geometry['b_ref']  # [m]
     
     # TODO: add all relevant parameters here
     geometry['ar'] = 10.0 # can be deleted later
  
     # kite mass + KCU ?
-    geometry['m_k'] = 36.8  # [kg]
+    geometry['m_k'] = 6.21 + 8.4  # [kg]
 
     # tether attachment point
     geometry['r_tether'] = np.zeros((3,1))
+
+    # steering coefficient
+    geometry['c_s'] = 2.59 # [-]
+
+    # correction factor
+    geometry['c2_s'] = 0.93 # [-]
+
+    # Relative side area 
+    geometry['A_side/A'] = 0.306 # [%]
+
+    # Straight tether elevation angle
+    geometry['beta'] = 74.7 # [deg]
+
+    # Depower angle offset 
+    geometry['alpha_0'] = 20.0 # [deg]
+
+    # Steering-induced drag coefficient 
+    geometry['K_s_D'] = 0.6 # [-]
+
+    # Steering offset c0 
+    geometry['c0'] = -0.004 # [-]
+
+    # Steering constant c1
+    geometry['c1'] = 0.264  # [rad/m]
+
+    # Steering constant c2
+    geometry['c2'] = 6.20  # [rad m/s^2]
 
     return geometry
 

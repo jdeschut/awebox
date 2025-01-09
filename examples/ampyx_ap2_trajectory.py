@@ -46,12 +46,12 @@ def run(plot_show_block=True, overwrite_options={}):
     options['nlp.n_k'] = 40
     options['nlp.collocation.u_param'] = 'zoh'
     options['user_options.trajectory.lift_mode.phase_fix'] = 'simple' # 'single_reelout'
-    options['solver.linear_solver'] = 'ma57'  # if HSL is installed, otherwise 'mumps'
+    options['solver.linear_solver'] = 'mumps'  # if HSL is installed, otherwise 'mumps'
     options['nlp.cost.beta'] = False # penalize side-slip (can improve convergence)
 
     # (experimental) set to "True" to significantly (factor 5 to 10) decrease construction time
     # note: this may result in slightly slower solution timings
-    options['nlp.compile_subfunctions'] = True
+    options['nlp.compile_subfunctions'] = False
 
     for option_name, option_val in overwrite_options.items():
         options[option_name] = option_val
@@ -117,7 +117,7 @@ def run(plot_show_block=True, overwrite_options={}):
     plt.grid(True)
 
     # a block=False argument will automatically close the figures after they've been created
-    # plt.show(block=plot_show_block)
+    plt.show(block=plot_show_block)
 
     return trial
 
