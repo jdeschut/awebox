@@ -1328,6 +1328,8 @@ def estimate_CD(options):
         nhat = cas.vertcat(sin, cos)
         rot = CA * ahat + CN * nhat
         CD = rot[0]
+    else:
+        CD = 0.2
     return CD
 
 
