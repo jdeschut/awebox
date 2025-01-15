@@ -50,8 +50,17 @@ import awebox.tools.vector_operations as vect_op
 import awebox.tools.struct_operations as struct_op
 import awebox.tools.print_operations as print_op
 import awebox.tools.constraint_operations as cstr_op
+import awebox.mdl.aero.kite_dir.tools as tools
+import awebox.mdl.aero.kite_dir.three_dof_kite as three_dof_kite
 
 from awebox.logger.logger import Logger as awelogger
+
+def get_force_vector(options, variables, wind, architecture, parameters, kite, outputs):
+    kite_dcm = three_dof_kite.get_kite_dcm(options, variables, wind, kite, architecture)
+
+    vec_u = tools.get_local_air_velocity_in_earth_frame(options, variables, wind, kite, kite_dcm, architecture,
+                                                        parameters, outputs)
+    return vec_u, kite_dcm
 
 def make_dynamics(options, atmos, wind, parameters, architecture):
 
@@ -93,7 +102,11 @@ def make_dynamics(options, atmos, wind, parameters, architecture):
     # add LEI soft-wing dynamic equation for psi
     if options['wing_type'] == 'LEI':
         psi = system_variables['SI']['x']['psi10']
-        kitepower_lei_psi_dyn_cstr_expr = system_variables['SI']['xdot']['dpsi10'] - 1.0 # dpsi - expr_for_dpsi
+        coeff = system_variables['SI']['x']['coeff10']
+
+        vec_u, _ = get_force_vector(options, system_variables['SI'], wind, architecture, parameters, 1, outputs)
+        
+        kitepower_lei_psi_dyn_cstr_expr = system_variables['SI']['xdot']['dpsi10'] - (parameters['theta0', 'geometry', 'c1'] * cas.norm_2(vec_u) * (coeff[0] - parameters['theta0', 'geometry', 'c0']) + (parameters['theta0', 'geometry', 'c2'] / cas.norm_2(vec_u)) * cas.sin(psi) * cas.cos(parameters['theta0', 'geometry', 'beta']))  # dpsi - expr_for_dpsi
         lei_soft_wing_psi_cstr = cstr_op.Constraint(expr=kitepower_lei_psi_dyn_cstr_expr,
                                                     cstr_type='eq',
                                                     name='dynamics_lei_psi')

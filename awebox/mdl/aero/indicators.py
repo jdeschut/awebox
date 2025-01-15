@@ -39,7 +39,17 @@ import awebox.mdl.aero.induction_dir.general_dir.flow as general_flow
 import awebox.tools.vector_operations as vect_op
 import awebox.tools.performance_operations as perf_op
 import awebox.tools.print_operations as print_op
+import awebox.mdl.aero.kite_dir.three_dof_kite as three_dof_kite
+import awebox.mdl.aero.kite_dir.tools as tools
 
+
+def get_force_vector(options, variables, wind, architecture, parameters, kite, outputs):
+    kite_dcm = three_dof_kite.get_kite_dcm(options, variables, wind, kite, architecture)
+
+    vec_u = tools.get_local_air_velocity_in_earth_frame(options, variables, wind, kite, kite_dcm, architecture,
+                                                        parameters, outputs)
+
+    return vec_u, kite_dcm
 
 def get_mach(options, atmos, ua, q):
     norm_ua = vect_op.smooth_norm(ua)
@@ -268,7 +278,7 @@ def collect_tether_drag_losses(variables, tether_drag_forces, outputs, architect
 
     return outputs
 
-def collect_aero_validity_outputs(options, base_aerodynamic_quantities, outputs):
+def collect_aero_validity_outputs(options, base_aerodynamic_quantities, outputs, wind, variables, architecture, parameters):
 
     kite = base_aerodynamic_quantities['kite']
     ua = base_aerodynamic_quantities['air_velocity']
@@ -286,8 +296,14 @@ def collect_aero_validity_outputs(options, base_aerodynamic_quantities, outputs)
     ehat2 = kite_dcm[:, 1]  # spanwise, from positive edge to negative edge
     ehat3 = kite_dcm[:, 2]  # up
 
-    alpha = get_alpha(ua, kite_dcm)
-    beta = get_beta(ua, kite_dcm)
+    'TODO'
+    if options['wing_type'] == 'rigid_wing':
+        alpha = get_alpha(ua, kite_dcm)
+        beta = get_beta(ua, kite_dcm)
+    elif options['wing_type'] == 'LEI':
+        vec_u, _ = get_force_vector(options, variables, wind, architecture, parameters, kite, outputs)
+        coeff = variables['x']['coeff' + str(kite) + '0']
+        alpha = three_dof_kite.get_alpha_LEI(vec_u, kite_dcm, coeff, parameters)
 
     alpha_min = options['aero']['alpha_min_deg'] * np.pi / 180.0
     alpha_max = options['aero']['alpha_max_deg'] * np.pi / 180.0
@@ -306,13 +322,16 @@ def collect_aero_validity_outputs(options, base_aerodynamic_quantities, outputs)
 
     outputs['aero_validity']['alpha_ub' + str(kite)] = alpha_ub
     outputs['aero_validity']['alpha_lb' + str(kite)] = alpha_lb
-    outputs['aero_validity']['beta_ub' + str(kite)] = beta_ub
-    outputs['aero_validity']['beta_lb' + str(kite)] = beta_lb
+
+    # das hier mit einem if statment rausnehmen: 
+    if options['wing_type'] == 'rigid_wing':
+      outputs['aero_validity']['beta_ub' + str(kite)] = beta_ub
+      outputs['aero_validity']['beta_lb' + str(kite)] = beta_lb
 
     outputs['aerodynamics']['alpha' + str(kite)] = alpha
-    outputs['aerodynamics']['beta' + str(kite)] = beta
+    if options['wing_type'] == 'rigid_wing': outputs['aerodynamics']['beta' + str(kite)] = beta
     outputs['aerodynamics']['alpha_deg' + str(kite)] = alpha * 180. / np.pi
-    outputs['aerodynamics']['beta_deg' + str(kite)] = beta * 180. / np.pi
+    if options['wing_type'] == 'rigid_wing': outputs['aerodynamics']['beta_deg' + str(kite)] = beta * 180. / np.pi
 
     # todo: add switch to allow minimum drag constraint
     # CD = base_aerodynamic_quantities['aero_coefficients']['CD_var']
@@ -431,6 +450,7 @@ def get_alpha(ua, r):
     alpha = z_component / x_component
 
     return alpha
+
 
 def get_beta(ua, r):
     ehat1 = r[:, 0]  # chordwise, from le to te

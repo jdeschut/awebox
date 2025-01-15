@@ -43,7 +43,7 @@ def geometry():
     geometry = {}
     geometry['b_ref'] = 5 # fill in some meaningful value
     geometry['s_ref'] = 10.18  # [m^2]
-    geometry['c_ref'] = geometry['s_ref'] / geometry['b_ref']  # [m]
+    geometry['c_ref'] = geometry['s_ref']  / geometry['b_ref']  # [m]
     
     # TODO: add all relevant parameters here
     geometry['ar'] = 10.0 # can be deleted later
@@ -68,6 +68,9 @@ def geometry():
 
     # Depower angle offset 
     geometry['alpha_0'] = 20.0 # [deg]
+
+    # Depower angle 
+    geometry['alpha_d_max'] = 20.0 # [deg]
 
     # Steering-induced drag coefficient 
     geometry['K_s_D'] = 0.6 # [-]
@@ -97,7 +100,7 @@ def aero():
     stab_derivs = {}
     aero_validity = {}
 
-    aero_validity['alpha_max_deg'] = 25.0
+    aero_validity['alpha_max_deg'] = 20.0
     aero_validity['alpha_min_deg'] = -20.0
     aero_validity['beta_max_deg'] = 20.0
     aero_validity['beta_min_deg'] = -20.0

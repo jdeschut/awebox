@@ -206,7 +206,7 @@ def get_aerodynamic_outputs(options, atmos, wind, variables_si, outputs, paramet
 
         outputs = indicators.collect_kite_aerodynamics_outputs(options, architecture, atmos, wind, variables_si, parameters, base_aerodynamic_quantities, outputs)
         outputs = indicators.collect_environmental_outputs(atmos, wind, base_aerodynamic_quantities, outputs)
-        outputs = indicators.collect_aero_validity_outputs(options, base_aerodynamic_quantities, outputs)
+        outputs = indicators.collect_aero_validity_outputs(options, base_aerodynamic_quantities, outputs, wind, variables_si, architecture, parameters)
         outputs = indicators.collect_local_performance_outputs(architecture, atmos, wind, variables_si, parameters,
                                                                base_aerodynamic_quantities, outputs)
         outputs = indicators.collect_power_balance_outputs(options, architecture, variables_si, base_aerodynamic_quantities, outputs)

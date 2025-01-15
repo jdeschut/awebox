@@ -122,9 +122,10 @@ def get_force_from_u_sym_in_earth_frame(vec_u, options, variables, kite, atmos, 
         f_aero = f_lift + f_drag
 
     if options['wing_type'] == 'LEI':
-        psi = variables['x']['psi' + str(kite) + str(parent)]
 
-        CL, CD = get_aerodynamic_coefficient(alpha)
+        psi = variables['x']['psi' + str(kite) + str(parent)]
+         
+        CL, CD = get_aerodynamic_coefficient(get_alpha_LEI(vec_u, kite_dcm, coeff, parameters))
 
         q = variables['x']['q' + str(kite) + str(parent)]
 
@@ -135,11 +136,16 @@ def get_force_from_u_sym_in_earth_frame(vec_u, options, variables, kite, atmos, 
         f_drag = 1. / 2. * rho_infty * cas.norm_2(vec_u)**2 * parameters['theta0', 'geometry', 's_ref'] * CD * (1 + parameters['theta0', 'geometry', 'K_s_D'] * cas.norm_1(coeff[0])) * f_drag_unit_vec
 
         correction_term = (parameters['theta0', 'geometry', 'c2_s'] / cas.norm_2(vec_u)) * cas.sin(psi) * cas.cos(deg2rad(parameters['theta0', 'geometry', 'beta']))
-        f_side = 1. / 2. * rho_infty * cas.norm_2(vec_u)**2 *  parameters['theta0', 'geometry', 'A_side/A'] * parameters['theta0', 'geometry', 'c_s'] * (coeff[0]+ correction_term) * kite_dcm[:, 1]
+        f_side = 1. / 2. * rho_infty * cas.norm_2(vec_u)**2 *  parameters['theta0', 'geometry', 'A_side/A'] * parameters['theta0', 'geometry', 'c_s'] * (coeff[0] + correction_term) * kite_dcm[:, 1]
 
         f_aero =  f_lift + f_drag + f_side
 
     return f_aero
+
+def get_alpha_LEI(vec_u, kite_dcm, coeff, parameters):
+    alpha_d = (coeff[1]) * parameters['theta0', 'geometry', 'alpha_d_max'] 
+    alpha = cas.arccos(cas.dot(vec_u, kite_dcm[:, 0]) / cas.norm_2(vec_u)) - alpha_d + parameters['theta0', 'geometry', 'alpha_0'] 
+    return alpha
 
 def deg2rad(angle_in_deg):
     return angle_in_deg * (cas.pi / 180)
@@ -151,20 +157,18 @@ def get_aerodynamic_coefficient(alpha):
     """
     Calculates the aerodynamic coefficient for a given angle of attack alpha.
 
-    :param alpha: angle of attack (AOA) alpha in grad
+    :param alpha: angle of attack alpha in grad
     :return: C_l, C_D: the aerodynamic coefficient for the given AOA
 
     """
-    degrees = [-20, -15, -10, -5, 0, 5, 10, 15, 20]
-    CL_values = [0.1, 0.125, 0.15, 0.175, 0.2, 0.4, 0.6, 0.8, 1.0]
-    CD_values = [0.2, 0.175, 0.15, 0.125, 0.1, 0.125,0.15, 0.175, 0.2]
+    # degrees = [-20, -15, -10, -5, 0, 5, 10, 15, 20]
+    # CL_values = [0.1, 0.125, 0.15, 0.175, 0.2, 0.4, 0.6, 0.8, 1.0]
+    # CD_values = [0.2, 0.175, 0.15, 0.125, 0.1, 0.125,0.15, 0.175, 0.2]
 
-    cl_f = cas.interpolant('Cl_F','bspline', [degrees], CL_values)
-    cd_f = cas.interpolant('Cd_F','bspline', [degrees], CD_values)
-
-    cl = cl_f(alpha)
-    cd = cd_f(alpha)
-    return cl, cd
+    alpha = rad2deg(alpha)
+    CL = 6.4474647951e-20 * alpha**3 + 7.5757575758e-04 * alpha**2 + 2.2500000000e-02 * alpha + 2.6818181818e-01
+    CD = 2.165e-4 * alpha**2 +  0.1195
+    return CL, CD
 
 def get_kite_reference_frame_1p_model(tether_direction, apparent_wind_vector):
     """
@@ -237,8 +241,7 @@ def get_kite_dcm(options, variables, wind, kite, architecture):
     elif options['wing_type'] == 'LEI':
 
         q = variables['x']['q' + str(kite) + str(parent)]
-        kite_dcm = get_kite_dcm(options, variables, wind, kite, architecture)
-        ehat1, ehat2, ehat3 =  get_kite_reference_frame_1p_model(q[1], vec_u_eff)
+        ehat1, ehat2, ehat3 =  get_kite_reference_frame_1p_model(q, vec_u_eff)
         kite_dcm = cas.horzcat(ehat1, ehat2, ehat3)
 
     return kite_dcm

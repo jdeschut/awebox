@@ -37,6 +37,10 @@ options['params.wind.power_wind.exp_ref'] = 0.15
 options['user_options.wind.model'] = 'power'
 options['user_options.wind.u_ref'] = 10.
 
+# coefficient boundaries
+options['model.system_bounds.x.coeff'] =  [np.array([-1., 0.]), np.array([1., 1.])]
+
+
 # indicate numerical nlp details
 # here: nlp discretization, with a zero-order-hold control parametrization, and
 # a simple phase-fixing routine. also, specify a linear solver to perform the Newton-steps
@@ -44,17 +48,19 @@ options['user_options.wind.u_ref'] = 10.
 options['nlp.n_k'] = 40
 options['nlp.collocation.u_param'] = 'zoh'
 options['user_options.trajectory.lift_mode.phase_fix'] = 'simple' # 'single_reelout'
-options['solver.linear_solver'] = 'ma57'  # if HSL is installed, otherwise 'mumps'
+options['solver.linear_solver'] = 'mumps'  # if HSL is installed, otherwise 'mumps'
 options['model.model_bounds.acceleration.include']  = False
 # (experimental) set to "True" to significantly (factor 5 to 10) decrease construction time
 # note: this may result in slightly slower solution timings
-options['nlp.compile_subfunctions'] = True
+options['nlp.compile_subfunctions'] = False
 
 
 # build and optimize the NLP (trial)
 trial = awe.Trial(options, 'Kitepower_LEI')
 trial.build()
-trial.optimize()
+trial.optimize(final_homotopy_step = 'initial_guess')
+
+
 
 # write the solution to CSV file, interpolating the collocation solution with given frequency.
 # trial.write_to_csv(filename = 'Ampyx_AP2_solution', frequency = 30)
@@ -68,6 +74,7 @@ plot_dict = trial.visualization.plot_dict
 outputs = plot_dict['outputs']
 time = plot_dict['time_grids']['ip']
 avg_power = plot_dict['power_and_performance']['avg_power']/1e3
+
 
 print('======================================')
 print('Average power: {} kW'.format(avg_power))
@@ -91,11 +98,10 @@ plt.subplot(513)
 plt.plot(time, outputs['aerodynamics']['airspeed1'][0], label='Airspeed')
 plt.ylabel('[m/s]')
 plt.legend()
-plt.hlines([10, 32], time[0], time[-1], linestyle='--', color='black')
 plt.grid(True)
 
 plt.subplot(514)
-plt.plot(time, 180.0 / np.pi * outputs['aerodynamics']['alpha1'][0], label='Angle of Attack')
+plt.plot(time, outputs['aerodynamics']['alpha1'][0], label='Angle of Attack')
 plt.ylabel('[deg]')
 plt.legend()
 plt.hlines([9, -6], time[0], time[-1], linestyle='--', color='black')
