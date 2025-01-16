@@ -23,8 +23,6 @@ elif platform.system() == 'Darwin':
     _COMPILERS = ["clang"]  # OSX
 elif platform.system() == 'Windows':
     _COMPILERS = ["cl.exe"] # Windows
-_COMPILER = "cl.exe"
-print(_COMPILER)
 
 # Data utils
 def write_json(data, file):
@@ -46,14 +44,13 @@ def read_json(file):
 def get_compiler():
     """Get available compiler."""
     global _COMPILER
-    if _COMPILER is None:
-        for compiler in _COMPILERS:
-            try:
-                call([compiler, "--version"])
-                _COMPILER = compiler
-                break
-            except Exception:
-                pass
+    for compiler in _COMPILERS:
+        try:
+            call([compiler, "--version"])
+            _COMPILER = compiler
+            break
+        except Exception:
+            pass
 
     return _COMPILER
 
