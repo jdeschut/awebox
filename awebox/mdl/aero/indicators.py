@@ -296,32 +296,33 @@ def collect_aero_validity_outputs(options, base_aerodynamic_quantities, outputs,
     ehat2 = kite_dcm[:, 1]  # spanwise, from positive edge to negative edge
     ehat3 = kite_dcm[:, 2]  # up
 
-    'TODO'
-    if options['wing_type'] == 'rigid_wing':
-        alpha = get_alpha(ua, kite_dcm)
-        beta = get_beta(ua, kite_dcm)
-    elif options['wing_type'] == 'LEI':
-        vec_u, _ = get_force_vector(options, variables, wind, architecture, parameters, kite, outputs)
-        coeff = variables['x']['coeff' + str(kite) + '0']
-        alpha = three_dof_kite.get_alpha_LEI(vec_u, kite_dcm, coeff, parameters)
-
     alpha_min = options['aero']['alpha_min_deg'] * np.pi / 180.0
     alpha_max = options['aero']['alpha_max_deg'] * np.pi / 180.0
     beta_min = options['aero']['beta_min_deg'] * np.pi / 180.0
     beta_max = options['aero']['beta_max_deg'] * np.pi / 180.0
 
-    alpha_ub_unscaled = (cas.mtimes(ua.T, ehat3) - cas.mtimes(ua.T, ehat1) * alpha_max)
-    alpha_lb_unscaled = (- cas.mtimes(ua.T, ehat3) + cas.mtimes(ua.T, ehat1) * alpha_min)
-    beta_ub_unscaled = (cas.mtimes(ua.T, ehat2) - cas.mtimes(ua.T, ehat1) * beta_max)
-    beta_lb_unscaled = (- cas.mtimes(ua.T, ehat2) + cas.mtimes(ua.T, ehat1) * beta_min)
+    if options['wing_type'] == 'rigid_wing':
+        alpha = get_alpha(ua, kite_dcm)
+        beta = get_beta(ua, kite_dcm)
+        alpha_ub_unscaled = (cas.mtimes(ua.T, ehat3) - cas.mtimes(ua.T, ehat1) * alpha_max)
+        alpha_lb_unscaled = (- cas.mtimes(ua.T, ehat3) + cas.mtimes(ua.T, ehat1) * alpha_min)
+        beta_ub_unscaled = (cas.mtimes(ua.T, ehat2) - cas.mtimes(ua.T, ehat1) * beta_max)
+        beta_lb_unscaled = (- cas.mtimes(ua.T, ehat2) + cas.mtimes(ua.T, ehat1) * beta_min)
 
-    alpha_ub = alpha_ub_unscaled * tightness / airspeed_ref / vect_op.smooth_abs(alpha_max)
-    alpha_lb = alpha_lb_unscaled * tightness / airspeed_ref / vect_op.smooth_abs(alpha_min)
-    beta_ub = beta_ub_unscaled * tightness / airspeed_ref / vect_op.smooth_abs(beta_max)
-    beta_lb = beta_lb_unscaled * tightness / airspeed_ref / vect_op.smooth_abs(beta_min)
+        alpha_ub = alpha_ub_unscaled * tightness / airspeed_ref / vect_op.smooth_abs(alpha_max)
+        alpha_lb = alpha_lb_unscaled * tightness / airspeed_ref / vect_op.smooth_abs(alpha_min)
+        beta_ub = beta_ub_unscaled * tightness / airspeed_ref / vect_op.smooth_abs(beta_max)
+        beta_lb = beta_lb_unscaled * tightness / airspeed_ref / vect_op.smooth_abs(beta_min)
 
-    outputs['aero_validity']['alpha_ub' + str(kite)] = alpha_ub
-    outputs['aero_validity']['alpha_lb' + str(kite)] = alpha_lb
+    elif options['wing_type'] == 'LEI':
+        vec_u, _ = get_force_vector(options, variables, wind, architecture, parameters, kite, outputs)
+        coeff = variables['x']['coeff' + str(kite) + '0']
+        alpha = three_dof_kite.get_alpha_LEI(vec_u, kite_dcm, coeff, parameters)
+        alpha_ub = alpha - alpha_max
+        alpha_lb = - alpha + alpha_min
+
+    # outputs['aero_validity']['alpha_ub' + str(kite)] = alpha_ub
+    # outputs['aero_validity']['alpha_lb' + str(kite)] = alpha_lb
 
     # das hier mit einem if statment rausnehmen: 
     if options['wing_type'] == 'rigid_wing':
@@ -329,9 +330,11 @@ def collect_aero_validity_outputs(options, base_aerodynamic_quantities, outputs,
       outputs['aero_validity']['beta_lb' + str(kite)] = beta_lb
 
     outputs['aerodynamics']['alpha' + str(kite)] = alpha
-    if options['wing_type'] == 'rigid_wing': outputs['aerodynamics']['beta' + str(kite)] = beta
+    if options['wing_type'] == 'rigid_wing': 
+        outputs['aerodynamics']['beta' + str(kite)] = beta
     outputs['aerodynamics']['alpha_deg' + str(kite)] = alpha * 180. / np.pi
-    if options['wing_type'] == 'rigid_wing': outputs['aerodynamics']['beta_deg' + str(kite)] = beta * 180. / np.pi
+    if options['wing_type'] == 'rigid_wing':
+        outputs['aerodynamics']['beta_deg' + str(kite)] = beta * 180. / np.pi
 
     # todo: add switch to allow minimum drag constraint
     # CD = base_aerodynamic_quantities['aero_coefficients']['CD_var']
