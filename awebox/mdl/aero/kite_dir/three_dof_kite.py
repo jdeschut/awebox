@@ -123,28 +123,29 @@ def get_force_from_u_sym_in_earth_frame(vec_u, options, variables, kite, atmos, 
 
     if options['wing_type'] == 'LEI':
 
-        psi = variables['x']['psi' + str(kite) + str(parent)]
+        #psi = variables['x']['psi' + str(kite) + str(parent)]
          
         CL, CD = get_aerodynamic_coefficient(get_alpha_LEI(vec_u, kite_dcm, coeff, parameters))
 
         q = variables['x']['q' + str(kite) + str(parent)]
 
+        CL = 1.
+        CD = 0.2
+        f_lift = 0.5 * rho_infty * cas.norm_2(vec_u) * parameters['theta0', 'geometry', 's_ref'] * CL * cas.cross(vec_u, kite_dcm[:, 1])
+        f_drag = 0.5 * rho_infty * cas.norm_2(vec_u) * parameters['theta0', 'geometry', 's_ref'] * CD * vec_u #  * (1 + parameters['theta0', 'geometry', 'K_s_D'] * cas.norm_1(coeff[0]))
 
-        f_lift_unit_vec = cas.cross(vec_u, kite_dcm[:, 1]) / cas.norm_2(cas.cross(vec_u, kite_dcm[:, 1]))
-        f_drag_unit_vec = vec_u / cas.norm_2(vec_u)
-        f_lift = 1. / 2. * rho_infty * cas.norm_2(vec_u)**2 * parameters['theta0', 'geometry', 's_ref'] * CL * f_lift_unit_vec
-        f_drag = 1. / 2. * rho_infty * cas.norm_2(vec_u)**2 * parameters['theta0', 'geometry', 's_ref'] * CD * (1 + parameters['theta0', 'geometry', 'K_s_D'] * cas.norm_1(coeff[0])) * f_drag_unit_vec
-
-        correction_term = (parameters['theta0', 'geometry', 'c2_s'] / cas.norm_2(vec_u)) * cas.sin(psi) * cas.cos(deg2rad(parameters['theta0', 'geometry', 'beta']))
-        f_side = 1. / 2. * rho_infty * cas.norm_2(vec_u)**2 *  parameters['theta0', 'geometry', 'A_side/A'] * parameters['theta0', 'geometry', 'c_s'] * (coeff[0] + correction_term) * kite_dcm[:, 1]
+        #correction_term = (parameters['theta0', 'geometry', 'c2_s'] / cas.norm_2(vec_u)) * cas.sin(psi) * cas.cos(deg2rad(parameters['theta0', 'geometry', 'beta']))
+        correction_term = 0.0
+        f_side = 0.5 * rho_infty * cas.mtimes(vec_u.T, vec_u) *  parameters['theta0', 'geometry', 'A_side/A'] * parameters['theta0', 'geometry', 'c_s'] * (coeff[0] + correction_term) * kite_dcm[:, 1]
 
         f_aero =  f_lift + f_drag + f_side
 
     return f_aero
 
 def get_alpha_LEI(vec_u, kite_dcm, coeff, parameters):
-    alpha_d = (coeff[1]) * parameters['theta0', 'geometry', 'alpha_d_max'] 
-    alpha = cas.arccos(cas.dot(vec_u, kite_dcm[:, 0]) / cas.norm_2(vec_u)) - alpha_d + parameters['theta0', 'geometry', 'alpha_0'] 
+    alpha_d = (coeff[1] - parameters['theta0', 'geometry', 'u_d_0']) / (parameters['theta0', 'geometry', 'u_d_max'] - parameters['theta0', 'geometry', 'u_d_0']) * deg2rad(parameters['theta0', 'geometry', 'alpha_d_max'])
+    alpha = cas.arccos(cas.dot(vec_u, kite_dcm[:, 0]) / cas.norm_2(vec_u)) - alpha_d + deg2rad(parameters['theta0', 'geometry', 'alpha_0'])
+    alpha = cas.arccos(cas.dot(vec_u, kite_dcm[:, 0]) / cas.norm_2(vec_u))
     return alpha
 
 def deg2rad(angle_in_deg):
