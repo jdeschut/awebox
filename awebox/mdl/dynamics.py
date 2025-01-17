@@ -100,17 +100,18 @@ def make_dynamics(options, atmos, wind, parameters, architecture):
     cstr_list.append(lagr_dyn_cstr)
 
     # add LEI soft-wing dynamic equation for psi
-    if options['wing_type'] == 'LEI':
-        psi = system_variables['SI']['x']['psi10']
-        coeff = system_variables['SI']['x']['coeff10']
+    # if options['wing_type'] == 'LEI':
+    #     psi = system_variables['SI']['x']['psi10']
+    #     coeff = system_variables['SI']['x']['coeff10']
 
-        vec_u, _ = get_force_vector(options, system_variables['SI'], wind, architecture, parameters, 1, outputs)
+    #     vec_u, _ = get_force_vector(options, system_variables['SI'], wind, architecture, parameters, 1, outputs)
         
-        kitepower_lei_psi_dyn_cstr_expr = system_variables['SI']['xdot']['dpsi10'] - (parameters['theta0', 'geometry', 'c1'] * cas.norm_2(vec_u) * (coeff[0] - parameters['theta0', 'geometry', 'c0']) + (parameters['theta0', 'geometry', 'c2'] / cas.norm_2(vec_u)) * cas.sin(psi) * cas.cos(parameters['theta0', 'geometry', 'beta']))  # dpsi - expr_for_dpsi
-        lei_soft_wing_psi_cstr = cstr_op.Constraint(expr=kitepower_lei_psi_dyn_cstr_expr,
-                                                    cstr_type='eq',
-                                                    name='dynamics_lei_psi')
-        cstr_list.append(lei_soft_wing_psi_cstr)
+    #     kitepower_lei_psi_dyn_cstr_expr = system_variables['SI']['xdot']['dpsi10'] - (parameters['theta0', 'geometry', 'c1'] * cas.norm_2(vec_u) * (coeff[0] - parameters['theta0', 'geometry', 'c0']) + (parameters['theta0', 'geometry', 'c2'] / cas.norm_2(vec_u)) * cas.sin(psi) * cas.cos(parameters['theta0', 'geometry', 'beta']))  # dpsi - expr_for_dpsi
+    #     kitepower_lei_psi_dyn_cstr_expr = system_variables['SI']['xdot']['dpsi10']
+    #     lei_soft_wing_psi_cstr = cstr_op.Constraint(expr=kitepower_lei_psi_dyn_cstr_expr,
+    #                                                 cstr_type='eq',
+    #                                                 name='dynamics_lei_psi')
+    #     cstr_list.append(lei_soft_wing_psi_cstr)
 
     # enforce lifted aerodynamic force <-- this must happen after lagr_dyn.get_dynamics, which determines the kite indicators
     if options['aero']['lift_aero_force']:

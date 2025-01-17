@@ -98,8 +98,8 @@ def generate_structure(options, architecture):
         kite_states += [('kappa', (1, 1))]
         kite_controls += [('dkappa', (1, 1))]
 
-    if options['wing_type'] == 'LEI':
-        kite_states += [('psi', (1,1))] # orientation state for LEI kite
+    # if options['wing_type'] == 'LEI':
+    #     kite_states += [('psi', (1,1))] # orientation state for LEI kite
 
     # _list states, generalized coordinates and controls of all the nodes
     # together
