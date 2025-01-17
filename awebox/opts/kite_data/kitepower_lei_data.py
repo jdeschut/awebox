@@ -61,16 +61,22 @@ def geometry():
     geometry['c2_s'] = 0.93 # [-]
 
     # Relative side area 
-    geometry['A_side/A'] = 0.306 # [%]
+    geometry['A_side/A'] = 0.306 # [-]
 
     # Straight tether elevation angle
     geometry['beta'] = 74.7 # [deg]
 
     # Depower angle offset 
-    geometry['alpha_0'] = 20.0 # [deg]
+    geometry['alpha_0'] = 0.0 # [deg]
 
     # Depower angle 
-    geometry['alpha_d_max'] = 20.0 # [deg]
+    geometry['alpha_d_max'] = 31.0 # [deg]
+
+    # Depower offset
+    geometry['u_d_0'] = 0.0#0.213
+
+    # Max depower setting
+    geometry['u_d_max'] = 0.4247
 
     # Steering-induced drag coefficient 
     geometry['K_s_D'] = 0.6 # [-]
