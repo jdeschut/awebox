@@ -49,13 +49,12 @@ def subkeys(casadi_struct, key):
         indices = np.array(casadi_struct.f[key])
         number_index = indices.shape[0]
 
-        subkeys = set()
+        subkey_list = []
         for idx in range(number_index):
             canonical = casadi_struct.getCanonicalIndex(indices[idx])
             new_key = canonical[1]
-            subkeys.add(new_key)
-
-        subkey_list = sorted(subkeys)
+            if new_key not in subkey_list:
+                subkey_list.append(new_key)
     else:
         subkey_list = []
 
@@ -1078,7 +1077,7 @@ def construct_Xdot_struct(nlp_options, variables_dict):
 ##
 #  @brief Method to recursively generate a casadi structure out of a nested dict.
 #  @param v A (possibly nested) dictionary
-#  @return subdict_struct Casadi struct_symSX with same structure as v.
+#  @return subdict_struct Casadi struct_symMX with same structure as v.
 def generate_nested_dict_struct(v):
 
     # empty entry list
@@ -1102,7 +1101,7 @@ def generate_nested_dict_struct(v):
             entry_list.append(cas.entry(k1, shape= shape))
 
     # make overall structure
-    subdict_struct = cas.struct_symSX(entry_list)
+    subdict_struct = cas.struct_symMX(entry_list)
 
     return subdict_struct
 
@@ -1297,10 +1296,10 @@ def generate_variable_struct(variable_list):
 
     structs = {}
     for name in list(variable_list.keys()):
-        structs[name] = cas.struct_symSX([cas.entry(variable_list[name][i][0], shape=variable_list[name][i][1])
+        structs[name] = cas.struct_symMX([cas.entry(variable_list[name][i][0], shape=variable_list[name][i][1])
                         for i in range(len(variable_list[name]))])
 
-    variable_struct = cas.struct_symSX([cas.entry(name, struct=structs[name])
+    variable_struct = cas.struct_symMX([cas.entry(name, struct=structs[name])
                         for name in list(variable_list.keys())])
 
     return variable_struct, structs

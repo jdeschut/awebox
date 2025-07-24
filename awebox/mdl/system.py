@@ -423,7 +423,7 @@ def generate_system_parameters(options, architecture):
 
     # optimization parameters
     parameters_dict['phi'] = generate_optimization_parameters()
-    parameters = cas.struct_symSX([
+    parameters = cas.struct_symMX([
         cas.entry('theta0', struct=parameters_dict['theta0']),
         cas.entry('phi', struct=parameters_dict['phi'])
     ])
@@ -434,7 +434,7 @@ def generate_system_parameters(options, architecture):
 def generate_optimization_parameters():
 
     # variable system parameters
-    p_dec = cas.struct_symSX([(
+    p_dec = cas.struct_symMX([(
         cas.entry('gamma'),  # force homotopy variable
         cas.entry('tau'),   # tether drag homotopy variable
         cas.entry('iota'),  # induction homotopy variable
