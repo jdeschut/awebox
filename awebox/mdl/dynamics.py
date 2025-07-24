@@ -327,11 +327,7 @@ def make_output_structure(outputs, system_variables, parameters):
 
     # generate "empty" structure
     out_struct = cas.struct_symMX(full_list)
-<<<<<<< HEAD
-    # generate structure with SX expressions
-=======
     # generate structure with MX expressions
->>>>>>> 2aea200... change model construction to MX types for compilation purposes
     outputs_struct = out_struct(outputs_vec)
     # generate outputs function
     outputs_fun = cas.Function('outputs', [system_variables['scaled'], parameters], [outputs_struct.cat])
