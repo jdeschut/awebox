@@ -140,7 +140,8 @@ def generate_kite_inertia_tensor(options, parameters, mass_kite):
     if options['mass']['mass_scaling_law']:
 
         mass_kite_ref = parameters['theta0', 'geometry', 'm_k']
-        j_kite = j_ref * mass_kite / mass_kite_ref
+        b_ref = parameters['theta0', 'geometry', 'b_ref']
+        j_kite = j_ref * mass_kite / mass_kite_ref * (b_ref / 5.5)**2
 
     else:
 
