@@ -290,9 +290,15 @@ def generate_hippo_strategy_solvers(awebox_callback, nlp, options):
         middle_opts['ipopt.tol'] = options['tol_hippo']
         middle_opts['ipopt.warm_start_init_point'] = 'yes'
         middle_opts['ipopt.max_iter'] = options['max_iter_hippo']
+        middle_opts['ipopt.warm_start_bound_push'] = options['tol_hippo']
+        middle_opts['ipopt.warm_start_slack_bound_push'] = options['tol_hippo']
+        middle_opts['ipopt.warm_start_mult_bound_push'] = options['tol_hippo']
 
         final_opts['ipopt.mu_init'] = options['mu_hippo']
         final_opts['ipopt.warm_start_init_point'] = 'yes'
+        final_opts['ipopt.warm_start_bound_push'] = options['tol_hippo']
+        final_opts['ipopt.warm_start_slack_bound_push'] = options['tol_hippo']
+        final_opts['ipopt.warm_start_mult_bound_push'] = options['tol_hippo']
 
     if options['callback']:
         initial_opts['iteration_callback'] = awebox_callback
